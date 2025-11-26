@@ -4,6 +4,23 @@
  */
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
+
+/**
+ * Sanitize a string to prevent prompt injection and ensure safe content
+ * @param {string} text - Text to sanitize
+ * @param {number} maxLength - Maximum allowed length
+ * @returns {string} Sanitized text
+ */
+function sanitizeInput(text, maxLength = 200) {
+  if (!text || typeof text !== 'string') return '';
+  // Remove potential prompt injection patterns and limit length
+  return text
+    .replace(/[\r\n]+/g, ' ')  // Replace newlines with spaces
+    .replace(/[<>]/g, '')       // Remove angle brackets
+    .trim()
+    .slice(0, maxLength);
+}
 
 /**
  * Generate a demo website HTML for a business using OpenAI
@@ -19,12 +36,20 @@ export async function generateWebsiteWithOpenAI(business) {
     throw new Error('OpenAI API key is not configured');
   }
 
+  // Sanitize all business inputs
+  const sanitizedBusiness = {
+    name: sanitizeInput(business.name, 100) || 'Local Business',
+    type: sanitizeInput(business.type, 50) || 'Local Business',
+    address: sanitizeInput(business.address, 200) || 'Contact us for our location',
+    phone: sanitizeInput(business.phone, 30) || 'Contact us for details',
+  };
+
   const prompt = `Create a complete, professional HTML webpage for a local business with the following details:
 
-Business Name: ${business.name}
-Business Type: ${business.type || 'Local Business'}
-Address: ${business.address}
-Phone: ${business.phone || 'Contact us for details'}
+Business Name: ${sanitizedBusiness.name}
+Business Type: ${sanitizedBusiness.type}
+Address: ${sanitizedBusiness.address}
+Phone: ${sanitizedBusiness.phone}
 
 Requirements:
 1. Create a complete, valid HTML5 document with embedded CSS (no external stylesheets)
@@ -49,7 +74,7 @@ Return ONLY the complete HTML code, no explanations or markdown.`;
       'Authorization': `Bearer ${OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: 'gpt-3.5-turbo',
+      model: OPENAI_MODEL,
       messages: [
         {
           role: 'system',

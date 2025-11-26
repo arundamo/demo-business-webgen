@@ -62,6 +62,9 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error('Generation error:', error);
-    return res.status(500).json({ error: 'Failed to generate website' });
+    return res.status(500).json({ 
+      error: 'Failed to generate website',
+      details: error.message || 'An unexpected error occurred'
+    });
   }
 }

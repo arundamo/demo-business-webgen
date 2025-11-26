@@ -64,7 +64,7 @@ export default function WebsitePreview({ html, businessName, source, onClose }) 
               srcDoc={html}
               title="Website Preview"
               className={styles.previewIframe}
-              sandbox="allow-scripts"
+              sandbox=""
             />
           ) : (
             <pre className={styles.codeBlock}>
